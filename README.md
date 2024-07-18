@@ -1,0 +1,2 @@
+## A tiny implementation of PyTorch's autograd engine
+Based on Karpathy sensei's [micrograd](https://github.com/karpathy/micrograd) engine, this project implements a minimalist neural network library featuring backpropagation through automatic differentiation on a dynamically built DAG.
