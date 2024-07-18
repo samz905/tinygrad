@@ -21,6 +21,10 @@ class Unit:
         out._backward = _backward  
         return out
     
+    def __radd__(self, other):
+        other = other if isinstance(other, Unit) else Unit(other)
+        return other + self
+    
     def __sub__(self , other):
         return self + -other
     
