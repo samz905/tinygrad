@@ -9,7 +9,7 @@ class Unit:
 
 
     def __repr__(self):
-        return str(f"Unit(value={self.data})")
+        return str(f"Unit(data={self.data})")
     
 
     # Math ops
