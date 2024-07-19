@@ -1,21 +1,22 @@
 import math
 
 class Unit:
-    def __init__(self, value, _op='', _prev=[]):
-        self.value = value
+    def __init__(self, data, _op='', _prev=[]):
+        self.data = data
         self.grad = 0.0
+        self._backward = lambda: None
         self._op = _op
         self._prev = _prev
 
 
     def __repr__(self):
-        return str(f"Unit(value={self.value})")
+        return str(f"Unit(value={self.data})")
     
 
     # Math ops
     def __add__(self, other):
         other = other if isinstance(other, Unit) else Unit(other)
-        out = Unit((self.value + other.value), '+', [self, other])
+        out = Unit((self.data + self.data), '+', [self, other])
 
         def _backward():
             self.grad += out.grad
@@ -35,11 +36,11 @@ class Unit:
 
     def __mul__(self, other):
         other = other if isinstance(other, Unit) else Unit(other)
-        out = Unit((self.value * other.value), '*', [self, other])
+        out = Unit((self.data * other.data), '*', [self, other])
 
         def _backward():
-            self.grad += out.grad * other.value
-            other.grad += out.grad * self.value
+            self.grad += out.grad * other.data
+            other.grad += out.grad * self.data
 
         out._backward = _backward
         return out
@@ -51,10 +52,10 @@ class Unit:
 
     def __pow__(self, other):
         assert isinstance(other, (int, float)), "only support int or float"
-        out = Unit((self.value ** other), '^', [self])
+        out = Unit((self.data ** other), '^', [self])
 
         def _backward():
-            self.grad += out.grad * other * self.value ** (other - 1)
+            self.grad += out.grad * other * self.data ** (other - 1)
 
         out._backward = _backward
         return out
@@ -76,10 +77,10 @@ class Unit:
     
 
     def exp(self):
-        out = Unit((math.exp(self.value)), 'exp', [self])
+        out = Unit((math.exp(self.data)), 'exp', [self])
 
         def _backward():
-            self.grad += out.value * out.grad
+            self.grad += out.data * out.grad
 
         out._backward = _backward
         return out
@@ -87,30 +88,30 @@ class Unit:
 
     # Non-linearity functions
     def sigmoid(self):
-        out = Unit((1 / (1 + math.exp(-self.value))), 'sigmoid', [self])
+        out = Unit((1 / (1 + math.exp(-self.data))), 'sigmoid', [self])
 
         def _backward():
-            self.grad += out.value * out.grad
+            self.grad += out.data * out.grad
 
         out._backward = _backward
         return out
     
 
     def tanh(self):
-        out = Unit(((math.exp(2*self.value) - 1) / (math.exp(2 * self.value) + 1)), 'tanh', [self])
+        out = Unit(((math.exp(2*self.data) - 1) / (math.exp(2 * self.data) + 1)), 'tanh', [self])
 
         def _backward():
-            self.grad += (1 - out.value ** 2) * out.grad
+            self.grad += (1 - out.data ** 2) * out.grad
 
         out._backward = _backward
         return out
     
 
     def relu(self):
-        out = Unit(max(0, self.value), 'relu', [self])
+        out = Unit(max(0, self.data), 'relu', [self])
 
         def _backward():
-            self.grad += (out.value > 0) * out.grad
+            self.grad += (out.data > 0) * out.grad
 
         out._backward = _backward
         return out
@@ -134,10 +135,3 @@ class Unit:
 
         for node in reversed(topo): # Reversed because the list is ordered from input layer to output layer and we wanna go in the backwards direction starting from the output for backprop
             node._backward()
-
-
-
-# neuron1 = Unit(1.0)
-# neuron2 = Unit(2.0)
-# exp = neuron2.exp()
-# print(exp)
