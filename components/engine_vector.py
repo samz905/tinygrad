@@ -152,4 +152,24 @@ class Unit:
                 topo.append(v)
         build_topo(self)
 
-        # This function is expected to be called on the output node to initiate backprop from there so o.backward() will initiate backprop. Remember that we are finding grads for each weight as the derivative of the output w.r
+        # This function is expected to be called on the output node to initiate backprop from there so o.backward() will initiate backprop. Remember that we are finding grads for each weight as the derivative of the output w.r.t to that weight and for the output itself, do/do = 1
+        self.grad = 1.0
+
+        for node in reversed(topo): # Reversed because the list is ordered from input layer to output layer and we wanna go in the backwards direction starting from the output for backprop
+            node._backward()
+
+
+x = Unit(np.array([2, 3]))
+y = Unit(np.array([4, 5]))
+
+a = Unit(2)
+b = Unit(3)
+
+z = x * y
+r = a + z
+h = r**4
+k = r.exp()
+
+k.backward()
+print(x.grad)
+print(y.grad)
