@@ -1,7 +1,8 @@
 import numpy as np
+
 class Unit:
     def __init__(self, data, _op='', _prev=[]):
-        self.data = data if isinstance(data, np.ndarray) else Unit(np.array(data))
+        self.data = data if isinstance(data, np.ndarray) else np.array(data)
         self.grad = np.zeros(self.data.shape)
         self._backward = lambda: None
         self._op = _op
@@ -10,6 +11,10 @@ class Unit:
 
     def __repr__(self):
         return str(f"Unit(data={self.data})")
+    
+
+    def sum(self):
+        return Unit(np.sum(self.data))
     
 
     # Math ops
@@ -157,19 +162,3 @@ class Unit:
 
         for node in reversed(topo): # Reversed because the list is ordered from input layer to output layer and we wanna go in the backwards direction starting from the output for backprop
             node._backward()
-
-
-x = Unit(np.array([2, 3]))
-y = Unit(np.array([4, 5]))
-
-a = Unit(2)
-b = Unit(3)
-
-z = x * y
-r = a + z
-h = r**4
-k = r.exp()
-
-k.backward()
-print(x.grad)
-print(y.grad)
