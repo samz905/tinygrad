@@ -13,7 +13,7 @@ class Neuron:
         if not isinstance(x, Unit):
             x = Unit(x)
         activation = (self.w * x).sum() + self.b
-        output = activation.relu()
+        output = activation.relu().data[0]
         return output
 
 
@@ -39,5 +39,6 @@ class MLP:
 
     def __call__(self, x):
         for layer in self.layers:
-            x = layer(x)
+            x = Unit(layer(x))
         return x
+    
