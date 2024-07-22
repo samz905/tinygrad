@@ -3,18 +3,17 @@ from engine_vector import Unit
 
 class Neuron:
     def __init__(self, nin):
-        self.w = Unit(np.random.random(nin,))
+        self.w = [Unit(np.random.random()) for _ in range(nin)]
         self.b = Unit(np.random.random(1))
 
     def parameters(self):
-        return [self.w, self.b]
+        return self.w + [self.b]
     
     def __call__(self, x):
-        if not isinstance(x, Unit):
-            x = Unit(x)
-        activation = (self.w * x).sum() + self.b
-        output = activation.relu().data[0]
-        return output
+        if not isinstance(x, list):
+            x = [Unit(xi) for xi in x]
+        activation = sum([wi * xi for wi, xi in zip(self.w, x)]) + self.b
+        return activation.relu()
 
 
 class Layer:
@@ -25,8 +24,7 @@ class Layer:
         return [params for neuron in self.neurons for params in neuron.parameters()]
     
     def __call__(self, x):
-        outputs = [neuron(x) for neuron in self.neurons]
-        return outputs[0] if len(outputs) == 1 else outputs
+        return [neuron(x) for neuron in self.neurons]
     
 
 class MLP:
@@ -39,6 +37,5 @@ class MLP:
 
     def __call__(self, x):
         for layer in self.layers:
-            x = Unit(layer(x))
-        return x
-    
+            x = layer(x)
+        return x[0] if len(x) == 1 else x
