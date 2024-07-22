@@ -11,7 +11,7 @@ class Unit:
     def __repr__(self):
         return f"Unit(data={self.data})"
 
-    # Math ops
+    # Math ops - every operation must have a backward step to backprop the grads and every output must populate the _prev variables properly to backprop the grads to
     def __add__(self, other):
         if not isinstance(other, Unit):
             other = Unit(np.array(other))
@@ -80,9 +80,17 @@ class Unit:
 
     def dot(self, other):
         if not isinstance(other, Unit):
-            other = Unit(np.array(other))
+            other = Unit(other)
 
-        return Unit(np.dot(self.data, other.data))
+        prod = np.dot(self.data, other.data)
+        out = Unit(prod[0] if isinstance(prod, np.ndarray) else prod, 'dot product', [self, other])
+
+        def _backward():
+            self.grad += other.data * out.grad
+            other.grad += self.data * out.grad
+
+        out._backward = _backward
+        return out
 
     # Non-linearity functions
     def sigmoid(self):
@@ -107,8 +115,23 @@ class Unit:
         out = Unit(np.maximum(0, self.data), 'relu', [self])
 
         def _backward():
-            self.grad = self.grad + (out.data > 0) * out.grad
+            self.grad = self.grad + (self.data > 0) * out.grad
 
+        out._backward = _backward
+        return out
+
+    
+    @staticmethod
+    def concat(units):
+        data = np.array([u.data for u in units])
+        out = Unit(data, 'concat', units)
+        
+        def _backward():
+            for i, u in enumerate(units):
+                # Since each unit has a grad of the same shape, we backprop the respective gradient to its corresponding unit in the data list of the output unit
+                # Since each unit is just the output of the respective neuron in the layer, it now has its own gradient which can be backpropped to the neuron's inputs which as in nn are w, b and x 
+                u.grad += out.grad[i]
+        
         out._backward = _backward
         return out
 
@@ -129,4 +152,3 @@ class Unit:
 
         for node in reversed(topo):
             node._backward()
-            

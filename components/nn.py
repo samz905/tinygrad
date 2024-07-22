@@ -3,16 +3,16 @@ from engine_vector import Unit
 
 class Neuron:
     def __init__(self, nin):
-        self.w = [Unit(np.random.random()) for _ in range(nin)]
-        self.b = Unit(np.random.random(1))
+        self.w = Unit(np.random.rand(nin))
+        self.b = Unit(np.random.rand(1)[0])
 
     def parameters(self):
-        return self.w + [self.b]
-    
-    def __call__(self, x):
-        if not isinstance(x, list):
-            x = [Unit(xi) for xi in x]
-        activation = sum([wi * xi for wi, xi in zip(self.w, x)]) + self.b
+        return [self.w, self.b]
+
+    def __call__(self, x):        
+        if not isinstance(x, Unit):
+            x = Unit(x)
+        activation = self.w.dot(x) + self.b
         return activation.relu()
 
 
@@ -21,21 +21,24 @@ class Layer:
         self.neurons = [Neuron(nin) for _ in range(nout)]
 
     def parameters(self):
-        return [params for neuron in self.neurons for params in neuron.parameters()]
-    
+        return [param for neuron in self.neurons for param in neuron.parameters()]
+
     def __call__(self, x):
-        return [neuron(x) for neuron in self.neurons]
-    
+        outputs = [neuron(x) for neuron in self.neurons]
+
+        # The below step converts the list of neuron outputs into a single vectorised unit while incorporating backprop through the custom concat function
+        return outputs[0] if len(outputs) == 1 else Unit.concat(outputs) # Converts a list of units into a single vectorised unit
+
 
 class MLP:
-    def __init__(self, nin, nout: list):
-        total = [nin] + nout
-        self.layers = [Layer(total[i], total[i + 1]) for i in range(len(nout))]
+    def __init__(self, nin, nouts):
+        sizes = [nin] + nouts
+        self.layers = [Layer(sizes[i], sizes[i + 1]) for i in range(len(nouts))]
 
     def parameters(self):
-        return [params for layer in self.layers for params in layer.parameters()]
+        return [param for layer in self.layers for param in layer.parameters()]
 
     def __call__(self, x):
         for layer in self.layers:
             x = layer(x)
-        return x[0] if len(x) == 1 else x
+        return x
