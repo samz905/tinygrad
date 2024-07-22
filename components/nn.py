@@ -27,7 +27,8 @@ class Layer:
         outputs = [neuron(x) for neuron in self.neurons]
 
         # The below step converts the list of neuron outputs into a single vectorised unit while incorporating backprop through the custom concat function defined for the Unit class
-        # Each unit in the input of this concat operation is the output of the respective neuron in the layer stored as a list. Once each neuron gets its gradient, it backprops to the weights as well through w * x + b
+        # The output unit of the concat operation can only perform shape-preserving or supported operations only so its output also backprops the gradients in the same shape (data and grad always have the same shape for each unit)
+        # Each input unit of the concat operation is the output of the respective neuron in the layer stored as a list. Once each neuron gets its gradient, it backprops to the weights as well through w * x + b (Each neuron's weight matrix has the same shape as the input feature matrix)
         return outputs[0] if len(outputs) == 1 else Unit.concat(outputs) # Converts a list of units into a single vectorised unit
 
 
