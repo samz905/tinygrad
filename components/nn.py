@@ -26,7 +26,7 @@ class Layer:
     def __call__(self, x):
         outputs = [neuron(x) for neuron in self.neurons]
 
-        # The below step converts the list of neuron outputs into a single vectorised unit while incorporating backprop through the custom concat function
+        # The below step converts the list of neuron outputs into a single vectorised unit while incorporating backprop through the custom concat function defined for the Unit class
         return outputs[0] if len(outputs) == 1 else Unit.concat(outputs) # Converts a list of units into a single vectorised unit
 
 
