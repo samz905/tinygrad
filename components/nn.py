@@ -44,3 +44,52 @@ class MLP:
         for layer in self.layers:
             x = layer(x)
         return x
+    
+    def predict(self, batch):
+        return [self(x) for x in batch]
+    
+    def loss(self, predictions, targets):
+        return (sum((prediction - target)**2 for prediction, target in zip(predictions, targets)) / len(predictions))**0.5
+    
+    def train(self, batch, targets, iterations=1000, lr=0.0005):
+        for _ in range(iterations):
+            # Forward pass
+            predictions = self.predict(batch)
+            rms_loss = self.loss(predictions, targets)
+
+            #Backprop
+            rms_loss.backward()
+
+            # Gradient descent
+            for param in self.parameters():
+                # print(f"param: {param} and param.grad: {param.grad}")
+                param.data = param.data - lr * param.grad
+                param.grad = np.zeros_like(param.data)
+
+        return {
+            "loss": rms_loss.data,
+            "predictions": predictions
+        }
+
+
+# Trying out on a tiny dataset
+n = MLP(3, [5, 4, 1])
+
+xs = [
+    [2, 3, -1],
+    [3, -1, 0.5],
+    [0.5, 1, 1],
+    [1, 1, -1],
+]
+
+ys = [1, -1, -1, 1]
+
+predictions = n.predict(xs)
+loss_before_training = n.loss(predictions, ys)
+
+print(f"Loss before training: {loss_before_training} and predictions: {predictions}")
+
+loss_after_training = n.train(xs, ys, iterations=1000, lr=0.01)
+
+print(f"Loss after training: {loss_after_training['loss']} and predictions: {loss_after_training['predictions']}")
+            
