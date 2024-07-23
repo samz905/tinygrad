@@ -68,28 +68,5 @@ class MLP:
 
         return {
             "loss": rms_loss.data,
-            "predictions": predictions
+            "predictions": [prediction.data.item() for prediction in predictions],
         }
-
-
-# Trying out on a tiny dataset
-n = MLP(3, [5, 4, 1])
-
-xs = [
-    [2, 3, -1],
-    [3, -1, 0.5],
-    [0.5, 1, 1],
-    [1, 1, -1],
-]
-
-ys = [1, -1, -1, 1]
-
-predictions = n.predict(xs)
-loss_before_training = n.loss(predictions, ys)
-
-print(f"Loss before training: {loss_before_training} and predictions: {predictions}")
-
-loss_after_training = n.train(xs, ys, iterations=1000, lr=0.01)
-
-print(f"Loss after training: {loss_after_training['loss']} and predictions: {loss_after_training['predictions']}")
-            
