@@ -18,6 +18,8 @@ class Unit:
 
         out = Unit(np.add(self.data, other.data), '+', [self, other])
 
+        # We do += here to account for self or grad being part of multiple computational paths
+        # For ex., if c = a + b happens in one path and h = a * e happens in another (different paths still leading to an output), then a will get chain rule'd from both c (self.grad += c.grad) and h (self.grad += e.value (deriv) * h.grad (chain rule)) 
         def _backward():
             self.grad = self.grad + out.grad
             other.grad = other.grad + out.grad
